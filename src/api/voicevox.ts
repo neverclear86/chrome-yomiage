@@ -16,9 +16,16 @@ export function isVoicevox(speakerUuid: string): boolean {
 interface VoicevoxStyle {
   name: string;
   id: number;
-  /** talk / singing_teacher / frame_decode / sing。省略時は talk 扱い */
+  /** talk / streaming_talk / singing_teacher / frame_decode / sing。省略時は talk 扱い */
   type?: string;
 }
+
+/**
+ * audio_query と synthesis の両方が使えるスタイル種別。
+ * streaming_talk は talk に加えてストリーミング合成もできる種別で、
+ * 新しいエンジンは通常の話者をすべてこの種別で返す。
+ */
+const TALK_STYLE_TYPES = new Set(['talk', 'streaming_talk']);
 
 interface VoicevoxSpeaker {
   name: string;
@@ -31,7 +38,7 @@ interface VoicevoxSpeaker {
  * それらは audio_query を作れないため読み上げには使えない。
  */
 function isTalkStyle(style: VoicevoxStyle): boolean {
-  return (style.type ?? 'talk') === 'talk';
+  return TALK_STYLE_TYPES.has(style.type ?? 'talk');
 }
 
 export async function fetchSpeakers(): Promise<Speaker[]> {

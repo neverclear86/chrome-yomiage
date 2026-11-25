@@ -119,6 +119,35 @@ describe('VOICEVOXクライアント', () => {
     expect(speakers[0].styles).toEqual([{ styleName: 'ノーマル', styleId: 3 }]);
   });
 
+  // 新しいエンジンは通常の話者を talk ではなく streaming_talk で返す。
+  // これを除外すると「接続中」なのに話者一覧が空になる。
+  it('streaming_talkのスタイルを読み上げ可能として扱う', async () => {
+    stubSpeakers([
+      {
+        name: 'ずんだもん',
+        speaker_uuid: 'uuid-z',
+        styles: [
+          { name: 'ノーマル', id: 3, type: 'streaming_talk' },
+          { name: 'あまあま', id: 1, type: 'streaming_talk' },
+          { name: 'ノーマル', id: 76, type: 'sing' },
+        ],
+      },
+    ]);
+
+    const speakers = await fetchSpeakers();
+
+    expect(speakers).toEqual([
+      {
+        speakerName: 'ずんだもん',
+        speakerUuid: `${VOICEVOX_PREFIX}uuid-z`,
+        styles: [
+          { styleName: 'ノーマル', styleId: 3 },
+          { styleName: 'あまあま', styleId: 1 },
+        ],
+      },
+    ]);
+  });
+
   it('読み上げ可能なスタイルが無いキャラクターは一覧に含めない', async () => {
     stubSpeakers([
       { name: '波音リツ', speaker_uuid: 'uuid-r', styles: [{ name: 'クイーン', id: 65, type: 'sing' }] },
